@@ -1,1 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Золотая Корка — Пекарня</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body {
+      margin: 0;
+      background: #fffaf2;
+      color: #4a2e14;
+      overflow-x: hidden;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 15px rgba(0,0,0,.08);
+      z-index: 10;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      color: #d08a00;
+      animation: glow 3s infinite;
+      cursor: pointer;
+    }
+
+    @keyframes glow {
+      0% { text-shadow: 0 0 5px #ffd27a; }
+      50% { text-shadow: 0 0 15px #ffb700; }
+      100% { text-shadow: 0 0 5px #ffd27a; }
+    }
+
+    .cart-btn {
+      background: #ffb700;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    section {
+      padding: 30px 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .decor {
+      position: fixed;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, #ffe29a, transparent);
+      border-radius: 50%;
+      top: -60px;
+      right: -60px;
+      animation: float 6s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(20px); }
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .product {
+      background: #fff;
+      padding: 15px;
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.08);
+      transition: transform .3s;
+    }
+
+    .product:hover {
+      transform: translateY(-6px);
+    }
+
+    .product h3 {
+      margin: 0 0 5px;
+    }
+
+    .product p {
+      font-size: 14px;
+      opacity: .8;
+    }
+
+    .product button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 20px;
+      border: none;
+      background: #ffb700;
+      cursor: pointer;
+    }
+
+    .cart {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 320px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -5px 0 20px rgba(0,0,0,.15);
+      padding: 20px;
+      transform: translateX(100%);
+      transition: .4s;
+      overflow-y: auto;
+      z-index: 20;
+    }
+
+    .cart.open { transform: translateX(0); }
+
+    .cart h2 { margin-top: 0; }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .cart-item button {
+      background: none;
+      border: none;
+      color: red;
+      cursor: pointer;
+    }
+
+    .pay-btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      border-radius: 30px;
+      border: none;
+      background: #4caf50;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    footer {
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+      opacity: .8;
+    }
+
+    .qr {
+      margin-top: 10px;
+      max-width: 120px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="decor"></div>
+
+<header>
+  <h1 onclick="window.scrollTo({top:0,behavior:'smooth'})">Золотая Корка</h1>
+  <button class="cart-btn" onclick="toggleCart()">🛒 Корзина (<span id="count">0</span>)</button>
+</header>
+
+<section>
+  <h2>🍞 Наши продукты</h2>
+  <div class="products" id="products"></div>
+</section>
+
+<div class="cart" id="cart">
+  <h2>Корзина</h2>
+  <div id="cartItems"></div>
+  <strong>Итого: <span id="total">0</span> ₽</strong>
+  <button class="pay-btn">Оплатить</button>
+  <p>📞 7 929 636-54-64<br>Грозный</p>
+  <img src="qr.png" alt="QR" class="qr">
+</div>
+
+<footer>
+  © Золотая Корка — тёплый хлеб каждый день ☀️
+</footer>
+
+<script>
+const products = [
+  ["Хлеб деревенский","мука, вода, соль",40],
+  ["Багет","мука, дрожжи",45],
+  ["Булочка с маком","мука, мак, сахар",35],
+  ["Слойка","слоёное тесто",60],
+  ["Круассан","масло, мука",80],
+  ["Лепёшка","мука, вода",30],
+  ["Чиабатта","оливковое масло",70],
+  ["Хлеб ржаной","ржаная мука",50],
+  ["Пирожок","начинка",55],
+  ["Самса","мясо, тесто",90],
+  ["Плюшка","сахар",40],
+  ["Сдоба","масло",65],
+  ["Хлеб с зернами","злаки",75],
+  ["Булка","мука",30],
+  ["Хачапури","сыр",100],
+  ["Лаваш","мука",25],
+  ["Калач","мука",45],
+  ["Пита","мука",40],
+  ["Хлеб чесночный","чеснок",55],
+  ["Фокачча","оливковое масло",85]
+];
+
+let cart = [];
+
+const prodDiv = document.getElementById("products");
+
+products.forEach((p,i)=>{
+  prodDiv.innerHTML += `
+    <div class="product">
+      <h3>${p[0]}</h3>
+      <p>${p[1]}</p>
+      <strong>${p[2]} ₽</strong>
+      <button onclick="add(${i})">Добавить</button>
+    </div>`;
+});
+
+function add(i){
+  cart.push(products[i]);
+  renderCart();
+}
+
+function remove(i){
+  cart.splice(i,1);
+  renderCart();
+}
+
+function renderCart(){
+  const div = document.getElementById("cartItems");
+  div.innerHTML = "";
+  let sum = 0;
+  cart.forEach((c,i)=>{
+    sum += c[2];
+    div.innerHTML += `<div class="cart-item">${c[0]} — ${c[2]} ₽ <button onclick="remove(${i})">✕</button></div>`;
+  });
+  document.getElementById("total").innerText = sum;
+  document.getElementById("count").innerText = cart.length;
+}
+
+function toggleCart(){
+  document.getElementById("cart").classList.toggle("open");
+}
+</script>
+
+</body>
+</html>
 
